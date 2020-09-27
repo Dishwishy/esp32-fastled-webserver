@@ -22,6 +22,46 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+
+  // hack for all the various functions
+
+
+void sendString(String value)
+{
+  webServer.send(200, "text/plain", value);
+}
+
+void broadcastInt(String name, uint8_t value)
+{
+  String json = "{\"name\":\"" + name + "\",\"value\":" + String(value) + "}";
+  //  webSocketsServer.broadcastTXT(json);
+}
+
+void broadcastString(String name, String value)
+{
+  String json = "{\"name\":\"" + name + "\",\"value\":\"" + String(value) + "\"}";
+  //  webSocketsServer.broadcastTXT(json);
+}
+
+
+
+void setPower(uint8_t value)
+{
+  power = value == 0 ? 0 : 1;
+
+  EEPROM.write(5, power);
+  EEPROM.commit();
+
+  broadcastInt("power", power);
+
+}
+void sendInt(uint8_t value)
+{
+  sendString(String(value));
+}
+
+
+
 void setupWeb() {
   webServer.on("/all", HTTP_GET, []() {
     digitalWrite(led, 0);
@@ -47,15 +87,42 @@ void setupWeb() {
     digitalWrite(led, 1);
   });
 
+   webServer.on("/power", HTTP_POST, []() {
+    String value = webServer.arg("value");
+    setPower(value.toInt());
+    webServer.sendHeader("Access-Control-Allow-Origin", "*");
+    sendInt(power);
+  });
+
+  
+
+ 
+  webServer.on("/solidColor", HTTP_POST, []() {
+    String r = webServer.arg("r");
+    String g = webServer.arg("g");
+    String b = webServer.arg("b");
+    setSolidColor(r.toInt(), g.toInt(), b.toInt());
+    sendString(String(solidColor.r) + "," + String(solidColor.g) + "," + String(solidColor.b));
+    webServer.sendHeader("Access-Control-Allow-Origin", "*");
+  });
+
+
+
   webServer.serveStatic("/", SPIFFS, "/index.htm", "max-age=86400");
   webServer.serveStatic("/index.htm", SPIFFS, "/index.htm", "max-age=86400");
   webServer.serveStatic("/favicon.ico", SPIFFS, "/favicon.ico", "max-age=86400");
   webServer.serveStatic("/css/styles.css", SPIFFS, "/css/styles.css", "max-age=86400");
   webServer.serveStatic("/js/app.js", SPIFFS, "/js/app.js", "max-age=86400");
   webServer.serveStatic("/images/atom196.png", SPIFFS, "/images/atom196.png", "max-age=86400");
+  webServer.serveStatic("/images/chicago.png", SPIFFS, "/images/chicago.png", "max-age=86400");
 
   webServer.begin();
   Serial.println ( "HTTP server started" );
+
+
+
+
+  
 }
 
 void handleWeb() {
@@ -84,4 +151,3 @@ void handleWeb() {
     }
   }
 }
-
