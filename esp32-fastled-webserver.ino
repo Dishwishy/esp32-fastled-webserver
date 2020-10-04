@@ -29,13 +29,17 @@
 #include <SPIFFS.h>
 #include <EEPROM.h>
 
+
 #if defined(FASTLED_VERSION) && (FASTLED_VERSION < 3003000)
 #warning "Requires FastLED 3.3 or later; check github for latest code."
 #endif
 
 WebServer webServer(80);
-//GPIO pin for the onboard led (red led)
+//GPIO pin for the onboard blue LED
 const int led = 2;
+
+//GPIO for relay input
+#define RELAY_PIN 21
 
 uint8_t autoplay = 0;
 uint8_t autoplayDuration = 10;
@@ -46,6 +50,7 @@ uint8_t currentPatternIndex = 0; // Index number of which pattern is current
 uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 
 uint8_t power = 1;
+uint8_t motorPower = 1;
 uint8_t brightness = 255;
 
 uint8_t speed = 30;
@@ -70,7 +75,6 @@ unsigned long paletteTimeout = 0;
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
 #define DATA_PIN    5
-//#define CLK_PIN   4
 #define LED_TYPE    WS2812B
 #define COLOR_ORDER RGB
 #define NUM_STRIPS  1
@@ -81,6 +85,7 @@ CRGB leds[NUM_LEDS];
 #define MILLI_AMPS         3000 // IMPORTANT: set the max milli-Amps of your power supply (4A = 4000mA)
 #define FRAMES_PER_SECOND  60
 
+//include additional private libraryes
 #include "patterns.h"
 
 #include "field.h"
@@ -128,44 +133,30 @@ void listDir(fs::FS &fs, const char * dirname, uint8_t levels) {
 }
 
 void setup() {
-  pinMode(led, OUTPUT);
-  digitalWrite(led, 1);
-
-  //  delay(3000); // 3 second delay for recovery
-  Serial.begin(115200);
-
   SPIFFS.begin();
   listDir(SPIFFS, "/", 1);
 
-//  loadFieldsFromEEPROM(fields, fieldCount);
-
-  setupWifi();
+    // setup wifi and web 
+  setupWifi(); 
   setupWeb();
-
-  // three-wire LEDs (WS2811, WS2812, NeoPixel)
-  //  FastLED.addLeds<LED_TYPE, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
-
-  // four-wire LEDs (APA102, DotStar)
-  //FastLED.addLeds<LED_TYPE,DATA_PIN,CLK_PIN,COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
-
-  // Parallel output: 13, 12, 27, 33, 15, 32, 14, SCL
+  //  set up serial output
+  Serial.begin(115200);
+  // LED setup
   FastLED.addLeds<LED_TYPE, DATA_PIN, COLOR_ORDER>(leds, 0, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
- // FastLED.addLeds<LED_TYPE, 12, COLOR_ORDER>(leds, NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
- // FastLED.addLeds<LED_TYPE, 27, COLOR_ORDER>(leds, 2 * NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
- // FastLED.addLeds<LED_TYPE, 33, COLOR_ORDER>(leds, 3 * NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
- // FastLED.addLeds<LED_TYPE, 15, COLOR_ORDER>(leds, 4 * NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
- // FastLED.addLeds<LED_TYPE, 32, COLOR_ORDER>(leds, 5 * NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
- // FastLED.addLeds<LED_TYPE, 14, COLOR_ORDER>(leds, 6 * NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
-  //FastLED.addLeds<LED_TYPE, SCL, COLOR_ORDER>(leds, 7 * NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
-
   FastLED.setMaxPowerInVoltsAndMilliamps(5, MILLI_AMPS);
-  
-  // set master brightness control
   FastLED.setBrightness(brightness);
 
-  autoPlayTimeout = millis() + (autoplayDuration * 1000);
+
+
+
+  // loadfields from EEPROM is in field.h header file
+  // the eeprom.begin is in field.h
+  Serial.println(fieldCount);
+  loadFieldsFromEEPROM(fields, fieldCount);
+  FastLED.setBrightness(brightness);
   fill_solid(leds, NUM_LEDS, CRGB::Black);
-  power = EEPROM.read(5);
+
+
 }
 
 void loop()
@@ -173,13 +164,26 @@ void loop()
   handleWeb();
 
 
-
+  
   if (power == 0){
-    fill_solid(leds, NUM_LEDS, CRGB::Black);
+    fill_solid(leds, NUM_LEDS, CRGB::White);
     FastLED.show();
     delay(1000 / FRAMES_PER_SECOND);
     return;
   }
+  
+  
+  if (motorPower == 0){
+    digitalWrite(RELAY_PIN,LOW);
+
+  }
+  else if(motorPower == 1){
+    digitalWrite(RELAY_PIN,HIGH);
+
+  }
+  
+
+  /**
   else {
     // Call the current pattern function once, updating the 'leds' array
     patterns[currentPatternIndex].pattern();
@@ -200,9 +204,11 @@ void loop()
       paletteTimeout = millis() + (paletteDuration * 1000);
     }
   }
+  **/
  
 
   // send the 'leds' array out to the actual LED strip
+  
   FastLED.show();
   
   // insert a delay to keep the framerate modest

@@ -26,37 +26,23 @@
   // hack for all the various functions
 
 
-void sendString(String value)
-{
+void sendString(String value) {
   webServer.send(200, "text/plain", value);
 }
 
-void broadcastInt(String name, uint8_t value)
-{
+void broadcastInt(String name, uint8_t value) {
   String json = "{\"name\":\"" + name + "\",\"value\":" + String(value) + "}";
   //  webSocketsServer.broadcastTXT(json);
 }
 
-void broadcastString(String name, String value)
-{
+void broadcastString(String name, String value) {
   String json = "{\"name\":\"" + name + "\",\"value\":\"" + String(value) + "\"}";
   //  webSocketsServer.broadcastTXT(json);
 }
 
 
 
-void setPower(uint8_t value)
-{
-  power = value == 0 ? 0 : 1;
-
-  EEPROM.write(5, power);
-  EEPROM.commit();
-
-  broadcastInt("power", power);
-
-}
-void sendInt(uint8_t value)
-{
+void sendInt(uint8_t value) {
   sendString(String(value));
 }
 
@@ -81,20 +67,32 @@ void setupWeb() {
   webServer.on("/fieldValue", HTTP_POST, []() {
     digitalWrite(led, 0);
     String name = webServer.arg("name");
+    Serial.println(name);
     String value = webServer.arg("value");
+    Serial.println(value);
     String newValue = setFieldValue(name, value, fields, fieldCount);
     webServer.send(200, "text/json", newValue);
     digitalWrite(led, 1);
   });
 
+  /**
    webServer.on("/power", HTTP_POST, []() {
     String value = webServer.arg("value");
     setPower(value.toInt());
-    webServer.sendHeader("Access-Control-Allow-Origin", "*");
+    webServer.send(200, "text/json", value);
     sendInt(power);
   });
 
+   webServer.on("/motorpower", HTTP_POST, []() {
+    String value = webServer.arg("value");
+    setMotorPower(value.toInt());
+    webServer.send(200, "text/json", value);
+    sendInt(motorPower);
+  });
+
+
   
+
 
  
   webServer.on("/solidColor", HTTP_POST, []() {
@@ -103,8 +101,10 @@ void setupWeb() {
     String b = webServer.arg("b");
     setSolidColor(r.toInt(), g.toInt(), b.toInt());
     sendString(String(solidColor.r) + "," + String(solidColor.g) + "," + String(solidColor.b));
-    webServer.sendHeader("Access-Control-Allow-Origin", "*");
+    String value = String(solidColor.r) + "," + String(solidColor.g) + "," + String(solidColor.b);
+    webServer.send(200, "text/json",value);
   });
+    **/
 
 
 

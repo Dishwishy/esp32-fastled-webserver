@@ -140,6 +140,38 @@ function addBooleanField(field) {
   $("#form").append(template);
 }
 
+function addBooleanFieldMotor(field) {
+  var template = $("#booleanTemplateMotor").clone();
+
+  template.attr("id", "form-group-" + field.name);
+  template.attr("data-field-type", field.type);
+
+  var label = template.find(".control-label");
+  label.attr("for", "btn-group-" + field.name);
+  label.text(field.label);
+
+  var btngroup = template.find(".btn-group");
+  btngroup.attr("id", "btn-group-" + field.name);
+
+  var btnOn = template.find("#motorOn");
+  var btnOff = template.find("#motorff");
+
+  btnOn.attr("id", "motorOn" + field.name);
+  btnOff.attr("id", "motorOff" + field.name);
+
+  btnOn.attr("class", field.value ? "btn btn-primary" : "btn btn-default");
+  btnOff.attr("class", !field.value ? "btn btn-primary" : "btn btn-default");
+
+  btnOn.click(function() {
+    setBooleanFieldValue(field, btnOn, btnOff, 1)
+  });
+  btnOff.click(function() {
+    setBooleanFieldValue(field, btnOn, btnOff, 0)
+  });
+
+  $("#form").append(template);
+}
+
 function addSelectField(field) {
   var template = $("#selectTemplate").clone();
 

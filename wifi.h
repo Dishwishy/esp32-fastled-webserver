@@ -22,7 +22,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-//#define HOSTNAME "ESP32-" ///< Hostname. The setup function adds the Chip ID at the end.
+#define HOSTNAME "oldstyle" ///< Hostname. The setup function adds the Chip ID at the end.
 
 //const bool apMode = false;
 
@@ -31,21 +31,21 @@
 
 void setupWifi() {
   //  // Set Hostname.
-  //  String hostname(HOSTNAME);
+      String hostname(HOSTNAME);
   //
-  //  uint64_t chipid = ESP.getEfuseMac();
-  //  uint16_t long1 = (unsigned long)((chipid & 0xFFFF0000) >> 16 );
-  //  uint16_t long2 = (unsigned long)((chipid & 0x0000FFFF));
-  //  String hex = String(long1, HEX) + String(long2, HEX); // six octets
-  //  hostname += hex;
+   uint64_t chipid = ESP.getEfuseMac();
+   uint16_t long1 = (unsigned long)((chipid & 0xFFFF0000) >> 16 );
+   uint16_t long2 = (unsigned long)((chipid & 0x0000FFFF));
+   String hex = String(long1, HEX) + String(long2, HEX); // six octets
+    hostname += hex;
   //
-  //  char hostnameChar[hostname.length() + 1];
-  //  memset(hostnameChar, 0, hostname.length() + 1);
+    char hostnameChar[hostname.length() + 1];
+   memset(hostnameChar, 0, hostname.length() + 1);
   //
-  //  for (uint8_t i = 0; i < hostname.length(); i++)
-  //    hostnameChar[i] = hostname.charAt(i);
+    for (uint8_t i = 0; i < hostname.length(); i++)
+      hostnameChar[i] = hostname.charAt(i);
   //
-  //  WiFi.setHostname(hostnameChar);
+   WiFi.setHostname(hostnameChar);
   //
   //  // Print hostname.
   //  Serial.println("Hostname: " + hostname);

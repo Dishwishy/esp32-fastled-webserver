@@ -32,6 +32,18 @@ String setPower(String value) {
   return String(power);
 }
 
+String getMotorPower() {
+  return String(power);
+}
+
+String setMotorPower(String value) {
+  power = value.toInt();
+  power = power == 0 ? 0 : 1;
+  return String(power);
+}
+
+
+
 String getBrightness() {
   return String(brightness);
 }
@@ -244,6 +256,7 @@ String setTwinkleDensity(String value) {
 FieldList fields = {
   // name                 label                type               min,          max,  getValue,            getOptions,   setValue
   { "power",              "Power",             BooleanFieldType,    0,            1,  getPower,            NULL,         setPower            },
+  { "motorpower",         "Motor Power",       BooleanFieldType,    0,            1,  getMotorPower,       NULL,         setMotorPower       },
   { "brightness",         "Brightness",        NumberFieldType,     1,          255,  getBrightness,       NULL,         setBrightness       },
   { "speed",              "Speed",             NumberFieldType,     1,          255,  getSpeed,            NULL,         setSpeed            },
   

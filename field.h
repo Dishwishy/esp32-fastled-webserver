@@ -79,6 +79,7 @@ CRGB parseColor(String value) {
 }
 
 void writeFieldsToEEPROM(FieldList fields, uint8_t count) {
+
   uint8_t index = 0;
 
   EEPROM.write(index, 0);
@@ -108,6 +109,9 @@ String setFieldValue(String name, String value, FieldList fields, uint8_t count)
   String result;
 
   Field field = getField(name, fields, count);
+  Serial.println("set field: " + name + " to: " + value);
+  //Serial.println("fields list: " + fields[0]);
+  Serial.println("fields count: " + count);
   if (field.setValue) {
     if (field.type == ColorFieldType) {
       String r = webServer.arg("r");
