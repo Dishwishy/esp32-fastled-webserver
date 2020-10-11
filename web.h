@@ -67,44 +67,14 @@ void setupWeb() {
   webServer.on("/fieldValue", HTTP_POST, []() {
     digitalWrite(led, 0);
     String name = webServer.arg("name");
-    Serial.println(name);
+
     String value = webServer.arg("value");
-    Serial.println(value);
+
     String newValue = setFieldValue(name, value, fields, fieldCount);
     webServer.send(200, "text/json", newValue);
     digitalWrite(led, 1);
   });
 
-  /**
-   webServer.on("/power", HTTP_POST, []() {
-    String value = webServer.arg("value");
-    setPower(value.toInt());
-    webServer.send(200, "text/json", value);
-    sendInt(power);
-  });
-
-   webServer.on("/motorpower", HTTP_POST, []() {
-    String value = webServer.arg("value");
-    setMotorPower(value.toInt());
-    webServer.send(200, "text/json", value);
-    sendInt(motorPower);
-  });
-
-
-  
-
-
- 
-  webServer.on("/solidColor", HTTP_POST, []() {
-    String r = webServer.arg("r");
-    String g = webServer.arg("g");
-    String b = webServer.arg("b");
-    setSolidColor(r.toInt(), g.toInt(), b.toInt());
-    sendString(String(solidColor.r) + "," + String(solidColor.g) + "," + String(solidColor.b));
-    String value = String(solidColor.r) + "," + String(solidColor.g) + "," + String(solidColor.b);
-    webServer.send(200, "text/json",value);
-  });
-    **/
 
 
 

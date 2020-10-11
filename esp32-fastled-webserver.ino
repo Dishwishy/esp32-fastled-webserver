@@ -39,7 +39,7 @@ WebServer webServer(80);
 const int led = 2;
 
 //GPIO for relay input
-#define RELAY_PIN 21
+const int RELAY_PIN = 4;
 
 uint8_t autoplay = 0;
 uint8_t autoplayDuration = 10;
@@ -76,7 +76,7 @@ unsigned long paletteTimeout = 0;
 
 #define DATA_PIN    5
 #define LED_TYPE    WS2812B
-#define COLOR_ORDER RGB
+#define COLOR_ORDER GRB
 #define NUM_STRIPS  1
 #define NUM_LEDS_PER_STRIP 100
 #define NUM_LEDS NUM_LEDS_PER_STRIP * NUM_STRIPS
@@ -154,7 +154,7 @@ void setup() {
   Serial.println(fieldCount);
   loadFieldsFromEEPROM(fields, fieldCount);
   FastLED.setBrightness(brightness);
-  fill_solid(leds, NUM_LEDS, CRGB::Black);
+  //fill_solid(leds, NUM_LEDS, CRGB::Black);
 
 
 }
@@ -163,50 +163,6 @@ void loop()
 {
   handleWeb();
 
-
-  
-  if (power == 0){
-    fill_solid(leds, NUM_LEDS, CRGB::White);
-    FastLED.show();
-    delay(1000 / FRAMES_PER_SECOND);
-    return;
-  }
-  
-  
-  if (motorPower == 0){
-    digitalWrite(RELAY_PIN,LOW);
-
-  }
-  else if(motorPower == 1){
-    digitalWrite(RELAY_PIN,HIGH);
-
-  }
-  
-
-  /**
-  else {
-    // Call the current pattern function once, updating the 'leds' array
-    patterns[currentPatternIndex].pattern();
-
-    EVERY_N_MILLISECONDS(40) {
-      // slowly blend the current palette to the next
-      nblendPaletteTowardPalette(currentPalette, targetPalette, 8);
-      gHue++;  // slowly cycle the "base color" through the rainbow
-    }
-
-    if (autoplay == 1 && (millis() > autoPlayTimeout)) {
-      nextPattern();
-      autoPlayTimeout = millis() + (autoplayDuration * 1000);
-    }
-
-    if (cyclePalettes == 1 && (millis() > paletteTimeout)) {
-      nextPalette();
-      paletteTimeout = millis() + (paletteDuration * 1000);
-    }
-  }
-  **/
- 
-
   // send the 'leds' array out to the actual LED strip
   
   FastLED.show();
@@ -214,16 +170,4 @@ void loop()
   // insert a delay to keep the framerate modest
   // FastLED.delay(1000 / FRAMES_PER_SECOND);
   delay(1000 / FRAMES_PER_SECOND);
-}
-
-void nextPattern()
-{
-  // add one to the current pattern number, and wrap around at the end
-  currentPatternIndex = (currentPatternIndex + 1) % patternCount;
-}
-
-void nextPalette()
-{
-  currentPaletteIndex = (currentPaletteIndex + 1) % paletteCount;
-  targetPalette = palettes[currentPaletteIndex];
 }

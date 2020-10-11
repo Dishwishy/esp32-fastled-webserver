@@ -109,7 +109,7 @@ String setFieldValue(String name, String value, FieldList fields, uint8_t count)
   String result;
 
   Field field = getField(name, fields, count);
-  Serial.println("set field: " + name + " to: " + value);
+  //Serial.println("set field: " + name + " to: " + value);
   //Serial.println("fields list: " + fields[0]);
   Serial.println("fields count: " + count);
   if (field.setValue) {
@@ -169,6 +169,7 @@ void loadFieldsFromEEPROM(FieldList fields, uint8_t count) {
     } else {
       byte v = EEPROM.read(index++);
       field.setValue(String(v));
+
     }
   }
 }

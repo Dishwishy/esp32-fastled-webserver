@@ -22,6 +22,18 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+void nextPattern()
+{
+  // add one to the current pattern number, and wrap around at the end
+  currentPatternIndex = (currentPatternIndex + 1) % patternCount;
+}
+
+void nextPalette()
+{
+  currentPaletteIndex = (currentPaletteIndex + 1) % paletteCount;
+  targetPalette = palettes[currentPaletteIndex];
+}
+
 String getPower() {
   return String(power);
 }
@@ -29,18 +41,44 @@ String getPower() {
 String setPower(String value) {
   power = value.toInt();
   power = power == 0 ? 0 : 1;
-  return String(power);
+  //logic to handle LED color, etc.
+  if (power == 1){
+    fill_solid(leds, NUM_LEDS, CRGB::White);
+
+        return String(power);
+
+  }
+  else if (power == 0){
+    fill_solid(leds, NUM_LEDS, CRGB::Black);
+
+          return String(power);
+
+  }
+
 }
 
 String getMotorPower() {
-  return String(power);
+  return String(motorPower);
 }
 
 String setMotorPower(String value) {
-  power = value.toInt();
-  power = power == 0 ? 0 : 1;
-  return String(power);
+  Serial.println("setting motor power " + value);
+  motorPower = value.toInt();
+  motorPower = motorPower == 0 ? 0 : 1;
+  if (motorPower == 0){
+    digitalWrite(RELAY_PIN,0);
+    return String(motorPower);
+  }
+
+  else if(motorPower == 1){
+    digitalWrite(RELAY_PIN,1);
+    return String(motorPower);
+  }
+
 }
+
+
+
 
 
 
@@ -60,10 +98,11 @@ String getPattern() {
 
 void setPattern(uint8_t value)
 {
-  if (value >= patternCount)
+  if (value >= patternCount){
     value = patternCount - 1;
-
+  }
   currentPatternIndex = value;
+  patterns[currentPatternIndex].pattern();
 }
 
 String setPattern(String value) {
@@ -98,6 +137,7 @@ String setPalette(String value) {
   }
   currentPaletteIndex = tmp;
   targetPalette = palettes[currentPaletteIndex];
+
   return String(currentPaletteIndex);
 }
 
@@ -130,6 +170,22 @@ String setAutoplay(String value) {
   autoplay = value.toInt();
   autoplay = autoplay == 0 ? 0 : 1;
   autoPlayTimeout = millis() + (autoplayDuration * 1000);
+  // handle autoplay being turned on
+  if (autoplay == 1 ) {
+    // Call the current pattern function once, updating the 'leds' array
+    patterns[currentPatternIndex].pattern();
+    EVERY_N_MILLISECONDS(40) {
+      // slowly blend the current palette to the next
+      nblendPaletteTowardPalette(currentPalette, targetPalette, 8);
+      gHue++;  // slowly cycle the "base color" through the rainbow
+    }
+    if (millis() > autoPlayTimeout) {
+      nextPattern();
+      autoPlayTimeout = millis() + (autoplayDuration * 1000);
+    }
+
+  }
+
   return String(autoplay);
 }
 
@@ -159,6 +215,14 @@ String setCyclePalettes(String value) {
   cyclePalettes = value.toInt();
   cyclePalettes = cyclePalettes == 0 ? 0 : 1;
   paletteTimeout = millis() + (paletteDuration * 1000);
+  if(cyclePalettes == 1){
+      if (millis() > paletteTimeout) {
+      nextPalette();
+      paletteTimeout = millis() + (paletteDuration * 1000);
+    }
+  }
+
+
   return String(cyclePalettes);
 }
 
@@ -187,16 +251,23 @@ String getSolidColor() {
 String setSolidColor(uint8_t r, uint8_t g, uint8_t b)
 {
   solidColor = CRGB(r, g, b);
+  fill_solid(leds, NUM_LEDS, solidColor);
+  //FastLED.show();
 
+  delay(1000 / FRAMES_PER_SECOND);
   return "\"" + String(solidColor.r) + "," + String(solidColor.g) + "," + String(solidColor.b) + "\"";
 }
 
 String setSolidColor(CRGB color) {
+  fill_solid(leds, NUM_LEDS, color);
+  //FastLED.show();
   return setSolidColor(color.r, color.g, color.b);
 }
 
 String setSolidColor(String value) {
   CRGB color = parseColor(value);
+    fill_solid(leds, NUM_LEDS, color);
+    FastLED.show();
   
   return setSolidColor(color);
 }
